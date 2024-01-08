@@ -41,7 +41,7 @@ void setup()
       for(;;);
     }
     pinMode(microPin, INPUT);  
-  //  attachInterrupt(digitalPinToInterrupt(microPin), HandleMic, RISING); 
+    attachInterrupt(digitalPinToInterrupt(microPin), HandleMic, RISING); 
     pinMode(keyPadRow1, OUTPUT);
     pinMode(buzzerPin, OUTPUT);
     digitalWrite(keyPadRow1, HIGH);
@@ -66,12 +66,14 @@ void loop()
         if(HandleKey(keyPadColumn1))
         {
           int chk = DHT11.read(DHT11PIN);
-          Serial.print("Humidity (%): ");
-          Serial.println((float)DHT11.humidity, 2);
-          Serial.print("Temperature  (C): ");
-          Serial.println((float)DHT11.temperature, 2);
           display.clearDisplay();
-          display.println("Pressed 1");
+          display.drawLine(0, 0, 127, 0, WHITE);
+          display.setCursor(0,5);  
+          display.print("Humidity(%): ");
+          display.println((float)DHT11.humidity, 2);
+          display.print("Temperature(C): ");
+          display.println((float)DHT11.temperature, 2);
+          display.drawLine(0, 31, 127, 31, WHITE);
           display.display();
           ButtonPressed(1);
         }
@@ -137,6 +139,7 @@ bool HandleKey(int Pin)
 void HandleMic()
 {
     microOn = !microOn;
+    Serial.print("A");
 
 }
 
