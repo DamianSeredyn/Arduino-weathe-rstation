@@ -25,12 +25,14 @@ const int buzzerPin = 8;
 unsigned long actualTime = 0;
 unsigned long savedTime = 0;
 unsigned long oledIdleTime = 0;
+unsigned long buzzerTime = 0;
+
+int buttonPressed = 0;
 
 bool oledWorking = false;
-
+bool microOn = false;
 dht11 DHT11;
 
-bool microOn = false;
 void setup()
 {
     Serial.begin(9600);
@@ -58,23 +60,20 @@ void loop()
       // wypisywanie informacji na guzik
 
      actualTime = millis();
-     if (actualTime - savedTime >= 200UL)
+     if (actualTime - savedTime >= 100UL)
       { 
         // Dla wcisnietej 1
         if(HandleKey(keyPadColumn1))
         {
-            int chk = DHT11.read(DHT11PIN);
-            Serial.print("Humidity (%): ");
-            Serial.println((float)DHT11.humidity, 2);
-            Serial.print("Temperature  (C): ");
-            Serial.println((float)DHT11.temperature, 2);
-
+          int chk = DHT11.read(DHT11PIN);
+          Serial.print("Humidity (%): ");
+          Serial.println((float)DHT11.humidity, 2);
+          Serial.print("Temperature  (C): ");
+          Serial.println((float)DHT11.temperature, 2);
           display.clearDisplay();
           display.println("Pressed 1");
           display.display();
-          oledIdleTime = actualTime;
-          oledWorking = true;
-          digitalWrite(buzzerPin, HIGH);
+          ButtonPressed(1);
         }
        // Dla wcisnietej 2
         else if( HandleKey(keyPadColumn2))
@@ -82,9 +81,7 @@ void loop()
           display.clearDisplay();
           display.println("Pressed 2");
           display.display();
-          oledIdleTime = actualTime;
-          oledWorking = true;
-          digitalWrite(buzzerPin, HIGH);
+          ButtonPressed(2);
         }
          // Dla wcisnietej 2        
         else if (HandleKey(keyPadColumn3))
@@ -92,14 +89,11 @@ void loop()
           display.clearDisplay();
           display.println("Pressed 3");
           display.display();
-          oledIdleTime = actualTime;
-          oledWorking = true;
-          digitalWrite(buzzerPin, HIGH);
+          ButtonPressed(3);
         }
         else
         {
           savedTime = actualTime;
-          digitalWrite(buzzerPin, LOW);
         }
       }
       if(microOn)
@@ -108,6 +102,14 @@ void loop()
         //for(int i=0; i)
       }
 
+      if(digitalRead(buzzerPin))
+      {
+          if(actualTime - buzzerTime >= 225)
+          {
+            digitalWrite(buzzerPin, LOW);
+            buzzerTime = actualTime;
+          }
+      }
       if(oledWorking)
       {
           if(actualTime - oledIdleTime >= 4000)
@@ -138,3 +140,14 @@ void HandleMic()
 
 }
 
+void ButtonPressed(int newButton)
+{
+    oledIdleTime = actualTime;
+    oledWorking = true;
+    if(!digitalRead(buzzerPin) && newButton != buttonPressed)
+    {
+      digitalWrite(buzzerPin, HIGH);
+      buzzerTime = actualTime;
+    }
+    buttonPressed = newButton;
+}
