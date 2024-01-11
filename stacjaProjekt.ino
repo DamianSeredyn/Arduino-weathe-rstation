@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <DS3231.h>
 
 #define DHT11PIN 3
 
@@ -31,7 +32,10 @@ int buttonPressed = 0;
 
 bool oledWorking = false;
 bool microOn = false;
+
 dht11 DHT11;
+DS3231 clock;
+RTCDateTime dt;
 
 void setup()
 {
@@ -56,12 +60,17 @@ void setup()
     display.setCursor(0,0);     
     display.display();
 
+    //clock.begin();
+    //clock.setDateTime(__DATE__, __TIME__);
+
     attachInterrupt(digitalPinToInterrupt(microPin), HandleMic, FALLING ); 
 }
 
 void loop()
 { 
+    dt = clock.getDateTime();
     display.setCursor(0,0);   
+    
 
      actualTime = millis();
      if (actualTime - savedTime >= 100UL)
@@ -88,6 +97,12 @@ void loop()
           display.drawLine(0, 0, 127, 0, WHITE);
           display.setCursor(0,5);  
           display.println("Current Date: ");
+          display.print(dt.year);   display.print("-");
+          display.print(dt.month);  display.print("-");
+          display.print(dt.day);    display.println(" ");
+          display.print(dt.hour);   display.print(":");
+          display.print(dt.minute); display.print(":");
+          display.print(dt.second); display.println("");
           display.drawLine(0, 31, 127, 31, WHITE);
           display.display();
           ButtonPressed(2);
