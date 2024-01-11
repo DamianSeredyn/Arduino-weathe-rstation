@@ -40,10 +40,14 @@ void setup()
       Serial.println(F("SSD1306 allocation failed"));
       for(;;);
     }
-    pinMode(microPin, INPUT);  
-    attachInterrupt(digitalPinToInterrupt(microPin), HandleMic, RISING); 
+    pinMode(microPin, INPUT); 
+    pinMode(keyPadColumn1, INPUT);
+    pinMode(keyPadColumn2, INPUT);
+    pinMode(keyPadColumn3, INPUT); 
+    pinMode(DHT11PIN, INPUT); 
     pinMode(keyPadRow1, OUTPUT);
     pinMode(buzzerPin, OUTPUT);
+
     digitalWrite(keyPadRow1, HIGH);
 
     display.clearDisplay();
@@ -51,13 +55,13 @@ void setup()
     display.setTextColor(SSD1306_WHITE);     
     display.setCursor(0,0);     
     display.display();
+
+    attachInterrupt(digitalPinToInterrupt(microPin), HandleMic, FALLING ); 
 }
 
 void loop()
 { 
-    display.setCursor(0,0);    
-    //Serial.println();
-      // wypisywanie informacji na guzik
+    display.setCursor(0,0);   
 
      actualTime = millis();
      if (actualTime - savedTime >= 100UL)
@@ -78,30 +82,41 @@ void loop()
           ButtonPressed(1);
         }
        // Dla wcisnietej 2
-        else if( HandleKey(keyPadColumn2))
+        if( HandleKey(keyPadColumn2))
         {
           display.clearDisplay();
-          display.println("Pressed 2");
+          display.drawLine(0, 0, 127, 0, WHITE);
+          display.setCursor(0,5);  
+          display.println("Current Date: ");
+          display.drawLine(0, 31, 127, 31, WHITE);
           display.display();
           ButtonPressed(2);
         }
-         // Dla wcisnietej 2        
-        else if (HandleKey(keyPadColumn3))
+         // Dla wcisnietej 3        
+        if (HandleKey(keyPadColumn3))
         {
           display.clearDisplay();
+          display.drawLine(0, 0, 127, 0, WHITE);
+          display.setCursor(0,5);  
           display.println("Pressed 3");
+          display.drawLine(0, 31, 127, 31, WHITE);
           display.display();
-          ButtonPressed(3);
+         ButtonPressed(3);
         }
-        else
-        {
           savedTime = actualTime;
-        }
       }
-      if(microOn)
+      if(microOn && !oledWorking)
       {
         microOn = !microOn;
-        //for(int i=0; i)
+          display.drawLine(0, 0, 127, 0, WHITE);
+          display.setCursor(0,5);  
+          display.println("MENU");
+          display.println("1. Humidity and Temp");
+          display.println("2. Date 3. Check Wind");
+          display.drawLine(0, 31, 127, 31, WHITE);
+          display.display();
+        oledWorking = true;
+        
       }
 
       if(digitalRead(buzzerPin))
@@ -128,7 +143,6 @@ bool HandleKey(int Pin)
 {
   bool val = false;
   pinMode(Pin, INPUT); 
-  //Serial.println("in Handle");
   if(digitalRead(Pin) == HIGH)
   {
     val = true;
@@ -138,9 +152,7 @@ bool HandleKey(int Pin)
 }
 void HandleMic()
 {
-    microOn = !microOn;
-    Serial.print("A");
-
+    microOn = true;
 }
 
 void ButtonPressed(int newButton)
